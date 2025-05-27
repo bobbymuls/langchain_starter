@@ -255,6 +255,49 @@ def create_agent_workflow() -> StateGraph:
     return workflow.compile()
 ```
 
+### 📊 **Workflow Visualization**
+
+Here's a Mermaid flowchart that illustrates the LangGraph workflow logic:
+
+```mermaid
+graph TD
+    A[Start] --> B[extract_intent]
+    
+    B -->|should_check_weather| C{Decision Point 1}
+    
+    C -->|weather_query| D[weather_query]
+    C -->|check_weather| E[check_weather]
+    C -->|request_time_clarification| F[request_time_clarification]
+    C -->|request_clarification| G[request_clarification]
+    
+    E -->|should_create_event| H{Decision Point 2}
+    
+    H -->|create_event| I[create_event]
+    H -->|request_clarification| G
+    
+    D --> J[END]
+    I --> J
+    F --> J
+    G --> J
+    
+    style A fill:#e1f5fe
+    style J fill:#f3e5f5
+    style C fill:#fff3e0
+    style H fill:#fff3e0
+    style D fill:#e8f5e8
+    style I fill:#e8f5e8
+    style F fill:#fff8e1
+    style G fill:#ffebee
+```
+
+**🎯 Flowchart Explanation**:
+
+1. **Entry Point**: Always starts with `extract_intent` to understand user's message
+2. **Decision Point 1** (`should_check_weather`): Routes based on intent quality and type
+3. **Decision Point 2** (`should_create_event`): Routes based on weather conditions
+4. **Green Nodes**: Successful completion paths (weather info, event created)
+5. **Yellow/Red Nodes**: Clarification needed (time missing, unclear intent, bad weather)
+
 **🎯 LangGraph Concepts Explained**:
 
 1. **StateGraph**: The main workflow container that manages state
