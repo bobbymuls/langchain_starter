@@ -111,19 +111,38 @@ class GeminiClient:
     async def extract_intent(self, user_message: str) -> IntentExtraction:
         """Extract intent and datetime from user message"""
         system_prompt = """You are an AI assistant that extracts scheduling intent from natural language.
-        Extract the activity, date/time, and location (if mentioned) from the user's message.
+        
+        ONLY extract scheduling information if the user is clearly trying to schedule an activity or event.
         
         Current date/time for reference: {current_time}
         
-        For relative times like "this Saturday at 4pm", convert to absolute datetime.
-        Return confidence score based on how clear the intent is.
+        IMPORTANT RULES:
+        1. **NON-SCHEDULING MESSAGES**: If the user is just greeting (hello, hi, hey), asking general questions, 
+           or having casual conversation WITHOUT mentioning scheduling/planning activities, set:
+           - activity="casual conversation"
+           - confidence=0.0 (very low confidence)
+           
+        2. **WEATHER QUERIES**: If asking about weather without scheduling (e.g., "what's the weather like", "how's the weather"), set:
+           - is_weather_query=true
+           - activity="weather query"
+           
+        3. **SCHEDULING REQUESTS**: Only if the user mentions wanting to DO something at a specific time/date:
+           - "I want to go for a run tomorrow at 3pm"
+           - "Schedule a meeting this Friday"
+           - "Plan a picnic next Saturday"
+           - Set confidence=0.8+ for clear scheduling intent
+           
+        4. **TIME SPECIFICITY**:
+           - has_specific_time=true ONLY if user provides specific time (e.g., "3pm", "at 2:30", "9 in the morning")
+           - has_specific_time=false if only date or vague time (e.g., "tomorrow", "this Saturday", "next week")
+           
+        5. **LOCATION**: Default to "Singapore" if no location specified
         
-        IMPORTANT: 
-        - If the user is just asking about weather (e.g., "what's the weather like", "how's the weather", "weather forecast") 
-          without wanting to schedule an activity, set is_weather_query=true and activity="weather query".
-        - Set has_specific_time=true ONLY if user provides specific time (e.g., "3pm", "at 2:30", "9 in the morning").
-        - Set has_specific_time=false if user only mentions date or vague time (e.g., "tomorrow", "this Saturday", "next week").
-        - Default location to "Singapore" if no location is specified.
+        Examples:
+        - "hello" → activity="casual conversation", confidence=0.0
+        - "how are you?" → activity="casual conversation", confidence=0.0  
+        - "what's the weather?" → activity="weather query", is_weather_query=true
+        - "I want to run tomorrow at 3pm" → activity="run", confidence=0.9, has_specific_time=true
         
         {format_instructions}
         """
@@ -242,21 +261,98 @@ class GoogleCalendarClient:
     def __init__(self):
         self.scopes = ['https://www.googleapis.com/auth/calendar']
         self.service = None
+        self.credentials_file = 'credentials.json'
+        self.token_file = 'token.json'
     
     def authenticate(self):
-        """Authenticate with Google Calendar API"""
+        """Authenticate with Google Calendar API using OAuth 2.0"""
         creds = None
-        # TODO: Implement proper OAuth flow
-        # For now, this is a placeholder
-        logger.warning("Google Calendar authentication not implemented - using mock")
-        return True
+        
+        # Check if token.json exists (stored credentials)
+        if os.path.exists(self.token_file):
+            creds = Credentials.from_authorized_user_file(self.token_file, self.scopes)
+        
+        # If there are no (valid) credentials available, let the user log in
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                try:
+                    creds.refresh(Request())
+                    logger.info("Refreshed Google Calendar credentials")
+                except Exception as e:
+                    logger.error(f"Error refreshing credentials: {e}")
+                    creds = None
+            
+            if not creds:
+                if not os.path.exists(self.credentials_file):
+                    logger.error(f"Credentials file '{self.credentials_file}' not found. Please download it from Google Cloud Console.")
+                    return False
+                
+                try:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        self.credentials_file, self.scopes)
+                    creds = flow.run_local_server(port=0)
+                    logger.info("Successfully authenticated with Google Calendar")
+                except Exception as e:
+                    logger.error(f"Error during OAuth flow: {e}")
+                    return False
+            
+            # Save the credentials for the next run
+            try:
+                with open(self.token_file, 'w') as token:
+                    token.write(creds.to_json())
+                logger.info("Saved Google Calendar credentials to token.json")
+            except Exception as e:
+                logger.error(f"Error saving credentials: {e}")
+        
+        try:
+            self.service = build('calendar', 'v3', credentials=creds)
+            logger.info("Google Calendar service initialized successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error building Google Calendar service: {e}")
+            return False
     
     async def create_event(self, intent: IntentExtraction) -> bool:
         """Create calendar event"""
+        if not self.service:
+            logger.error("Google Calendar service not initialized")
+            return False
+        
         try:
-            # TODO: Implement actual Google Calendar event creation
-            logger.info(f"Mock: Creating calendar event for {intent.activity} at {intent.datetime_str}")
+            # Parse the datetime
+            from datetime import datetime, timedelta
+            start_time = datetime.fromisoformat(intent.datetime_str.replace('Z', '+00:00'))
+            
+            # Default duration: 1 hour
+            end_time = start_time + timedelta(hours=1)
+            
+            # Create event object
+            event = {
+                'summary': intent.activity,
+                'location': intent.location or 'Singapore',
+                'description': f'Scheduled via AI Calendar Bot\nActivity: {intent.activity}',
+                'start': {
+                    'dateTime': start_time.isoformat(),
+                    'timeZone': 'Asia/Singapore',  # Adjust timezone as needed
+                },
+                'end': {
+                    'dateTime': end_time.isoformat(),
+                    'timeZone': 'Asia/Singapore',  # Adjust timezone as needed
+                },
+                'reminders': {
+                    'useDefault': False,
+                    'overrides': [
+                        {'method': 'email', 'minutes': 24 * 60},  # 1 day before
+                        {'method': 'popup', 'minutes': 30},       # 30 minutes before
+                    ],
+                },
+            }
+            
+            # Insert the event
+            event_result = self.service.events().insert(calendarId='primary', body=event).execute()
+            logger.info(f"Calendar event created: {event_result.get('htmlLink')}")
             return True
+            
         except Exception as e:
             logger.error(f"Error creating calendar event: {e}")
             return False
@@ -365,6 +461,25 @@ async def request_time_clarification_node(state: AgentState) -> AgentState:
     state["needs_clarification"] = True
     return state
 
+async def casual_conversation_node(state: AgentState) -> AgentState:
+    """Node to handle casual conversation and greetings"""
+    logger.info("Handling casual conversation")
+    
+    user_message_lower = state["user_message"].lower()
+    
+    # Generate appropriate responses for different types of casual messages
+    if any(greeting in user_message_lower for greeting in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]):
+        state["response_message"] = "Hello! 👋 I'm your AI scheduling assistant. I can help you:\n\n📅 **Schedule activities** - Just tell me what you want to do and when!\n🌤️ **Check weather** - Ask about weather for any location\n\n**Examples:**\n• 'I want to go for a run tomorrow at 3pm'\n• 'Schedule a meeting this Friday at 2pm'\n• 'What's the weather like tomorrow?'\n\nHow can I help you today?"
+    elif any(question in user_message_lower for question in ["how are you", "what's up", "how's it going"]):
+        state["response_message"] = "I'm doing great, thank you! 😊 I'm here and ready to help you schedule activities and check the weather. What would you like to plan today?"
+    elif any(thanks in user_message_lower for thanks in ["thank", "thanks", "appreciate"]):
+        state["response_message"] = "You're very welcome! 😊 Feel free to ask me anytime if you need help scheduling activities or checking the weather!"
+    else:
+        # Generic casual conversation response
+        state["response_message"] = "I'm your AI scheduling assistant! 🤖 I can help you schedule activities and check weather forecasts.\n\n**Try asking me:**\n• 'Schedule a workout tomorrow at 6pm'\n• 'What's the weather like this weekend?'\n• 'I want to have a picnic on Saturday'\n\nWhat would you like to plan?"
+    
+    return state
+
 async def request_clarification_node(state: AgentState) -> AgentState:
     """Node to request clarification when weather is rainy or intent is unclear"""
     
@@ -386,16 +501,23 @@ async def request_clarification_node(state: AgentState) -> AgentState:
 # =============================================================================
 
 def should_check_weather(state: AgentState) -> str:
-    """Router: decide if we should check weather, handle weather query, or request clarification"""
-    if state["intent"] and state["intent"].confidence > 0.5 and state["intent"].activity != "unknown":
-        if state["intent"].is_weather_query:
-            return "weather_query"
-        elif not state["intent"].has_specific_time:
-            return "request_time_clarification"
-        else:
-            return "check_weather"
-    else:
-        return "request_clarification"
+    """Router: decide if we should check weather, handle weather query, casual conversation, or request clarification"""
+    if state["intent"]:
+        # Handle casual conversation (greetings, general chat)
+        if state["intent"].activity == "casual conversation" and state["intent"].confidence <= 0.1:
+            return "casual_conversation"
+        
+        # Handle clear intents with good confidence
+        if state["intent"].confidence > 0.5 and state["intent"].activity not in ["unknown", "casual conversation"]:
+            if state["intent"].is_weather_query:
+                return "weather_query"
+            elif not state["intent"].has_specific_time:
+                return "request_time_clarification"
+            else:
+                return "check_weather"
+    
+    # Default to clarification for unclear intents
+    return "request_clarification"
 
 def should_create_event(state: AgentState) -> str:
     """Router: decide if we should create calendar event or ask for clarification"""
@@ -420,6 +542,7 @@ def create_agent_workflow() -> StateGraph:
     workflow.add_node("create_event", create_calendar_event_node)
     workflow.add_node("request_time_clarification", request_time_clarification_node)
     workflow.add_node("request_clarification", request_clarification_node)
+    workflow.add_node("casual_conversation", casual_conversation_node)
     
     # Add edges
     workflow.set_entry_point("extract_intent")
@@ -431,7 +554,8 @@ def create_agent_workflow() -> StateGraph:
             "check_weather": "check_weather",
             "weather_query": "weather_query",
             "request_time_clarification": "request_time_clarification",
-            "request_clarification": "request_clarification"
+            "request_clarification": "request_clarification",
+            "casual_conversation": "casual_conversation"
         }
     )
     
@@ -448,6 +572,7 @@ def create_agent_workflow() -> StateGraph:
     workflow.add_edge("weather_query", END)
     workflow.add_edge("request_time_clarification", END)
     workflow.add_edge("request_clarification", END)
+    workflow.add_edge("casual_conversation", END)
     
     return workflow.compile()
 

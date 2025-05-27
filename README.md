@@ -1,267 +1,219 @@
-# AI Weather-Aware Scheduling Assistant 🤖🌤️
+# AI Agent for Weather-Aware Calendar Scheduling via Telegram
 
-> **Latest Update**: Now includes weather-only queries, multi-turn conversations, Singapore default location, and enhanced user experience! 🎉
+A sophisticated AI-powered Telegram bot that helps users schedule activities by checking weather conditions and automatically creating Google Calendar events. Built with LangChain, LangGraph, Google Gemini AI, and integrated with Google Calendar API.
 
-A smart Telegram bot that helps you schedule activities by checking weather conditions. Built with **Langchain**, **LangGraph**, **Gemini AI**, and multiple APIs.
+## 🌟 Features
 
-## 🎯 What It Does
+### 🤖 **Intelligent Conversation Handling**
+- **Smart Intent Recognition**: Distinguishes between casual conversation, weather queries, and scheduling requests
+- **Natural Language Processing**: Understands various ways of expressing scheduling intent
+- **Context-Aware Responses**: Maintains conversation context for multi-turn interactions
 
-This AI bot can:
-- **📅 Schedule activities** - Checks weather and creates calendar events
-- **🌤️ Answer weather queries** - Get detailed weather information
-- **🧠 Smart conversations** - Handles follow-up questions and clarifications
-- **🇸🇬 Singapore-focused** - Defaults to Singapore weather (customizable)
-
-### ✅ **FULLY WORKING** - Real Examples:
-
-**Activity Scheduling:**
-```
-You: "I want to go running this Saturday at 4pm"
-Bot: ✅ Great! I've scheduled 'running' for 28 December 2024, 4:00 PM. The weather looks good!
-```
-
-**Weather-Only Queries:**
-```
-You: "What's the weather like tomorrow?"
-Bot: 🌤️ Weather for Singapore
-     🌡️ Temperature: 28°C (feels like 32°C)
-     ☁️ Conditions: Partly Cloudy
-     💧 Humidity: 75%
-     ✨ Advice: Great weather for outdoor activities!
-```
-
-**Smart Weather Warnings:**
-```
-You: "I want to go for a picnic tomorrow"
-Bot: 🌧️ The weather forecast shows light rain for your planned picnic on 29 December 2024. Would you like to:
-     1. Proceed anyway
-     2. Reschedule to a different time  
-     3. Cancel the activity
-
-You: "reschedule"
-Bot: I'd be happy to help you reschedule! Please tell me when you'd prefer to do this activity instead.
-```
-
-## 🚀 Quick Setup (3 Steps)
-
-### 1. Install & Setup
-```bash
-git clone <your-repo>
-cd langchain_project
-python setup.py  # Auto-installs everything
-```
-
-### 2. Get API Keys & Configure
-Create a `.env` file with:
-```env
-TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
-GEMINI_API_KEY=your_gemini_api_key_here
-OPENWEATHER_API_KEY=your_openweather_key
-```
-
-**Getting API Keys:**
-
-**🤖 Telegram Bot:**
-1. Open Telegram and message @BotFather
-2. Send `/newbot` and follow instructions
-3. Copy the bot token
-
-**🌤️ OpenWeatherMap:**
-1. Sign up at [openweathermap.org](https://openweathermap.org/api)
-2. Go to "API keys" section
-3. Copy your free API key
-
-**🧠 Gemini AI:**
-1. Go to [Google AI Studio](https://aistudio.google.com/)
-2. Sign in with your Google account
-3. Click "Get API key" in the left sidebar
-4. Click "Create API key" → "Create API key in new project"
-5. Copy the generated API key
-
-### 3. Test & Run
-```bash
-python test_scripts/test_agent.py    # Should show 5/5 tests passing
-python main.py                       # Start your bot
-```
-
-## 🤖 How to Use Your Bot
-
-### Starting the Bot
-```bash
-python main.py
-```
-Then find your bot on Telegram and send `/start`
-
-### Stopping the Bot
-```bash
-Ctrl + C    # Gracefully stop the bot
-```
-If unresponsive, force stop with: `taskkill /f /im python.exe` (Windows)
-
-### What You Can Say
-
-**✅ Activity Scheduling:**
-- "I want to go running at 4pm this Saturday"
-- "Schedule a picnic tomorrow at 2pm"
-- "Plan a bike ride next Tuesday morning"
-
-**✅ Weather Queries:**
-- "What's the weather like tomorrow?"
-- "How's the weather this Saturday 3pm?"
-- "Weather forecast for Tokyo tomorrow"
-
-**✅ Follow-up Responses:**
-- When asked for time: "3pm", "2:30 in the afternoon"
-- When asked about rainy weather: "proceed", "reschedule", "cancel"
-
-## 🌟 Key Features
-
-### 🧠 **Smart Conversations**
-- **Multi-turn support**: Handles follow-up questions naturally
-- **Context awareness**: Remembers what you're trying to schedule
-- **Time clarification**: Asks for specific times when needed
-- **Weather decisions**: Gives options when weather is bad
+### 📅 **Advanced Scheduling**
+- **Automatic Calendar Integration**: Creates real Google Calendar events with proper details
+- **Time Clarification**: Asks for specific times when users provide only dates
+- **Weather-Aware Decisions**: Checks weather conditions before scheduling outdoor activities
+- **Flexible Rescheduling**: Offers options when weather conditions are unfavorable
 
 ### 🌤️ **Weather Intelligence**
-- **Real-time data**: Uses OpenWeatherMap API
-- **5-day forecasts**: Accurate timing for near-future events
-- **Smart advice**: Suggests what to do based on conditions
-- **Rain detection**: Warns about rainy weather for outdoor activities
+- **5-Day Forecast**: Uses OpenWeatherMap API for accurate weather predictions
+- **Location Support**: Supports weather queries for any global location (defaults to Singapore)
+- **Weather-Based Recommendations**: Provides advice based on weather conditions
+- **Rainy Day Handling**: Offers alternatives when weather is unsuitable for planned activities
 
-### 🇸🇬 **Singapore Default**
-- **Local focus**: Defaults to Singapore weather
-- **Customizable**: Specify other locations like "Tokyo", "London"
-- **Comprehensive data**: Temperature, humidity, conditions, advice
+### 🔐 **Secure Authentication**
+- **OAuth 2.0 Integration**: Secure Google Calendar API authentication
+- **Token Persistence**: Automatic credential management and refresh
+- **Privacy-First**: All credentials stored locally and excluded from version control
 
-### 📅 **Calendar Integration**
-- **Smart scheduling**: Creates events when weather is good
-- **Mock implementation**: Ready for real Google Calendar integration
-- **Conflict handling**: Prevents double-booking (future feature)
+## 🚀 Quick Start
 
-## 🔧 Technical Details
+### Prerequisites
+- Python 3.8+
+- Google Cloud Console account
+- Telegram Bot Token
+- OpenWeatherMap API key
+- Google Gemini API key
 
-### Architecture
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd langchain_project
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up Google Calendar API**
+   - Follow the detailed guide in `GOOGLE_CALENDAR_SETUP.md`
+   - Download `credentials.json` from Google Cloud Console
+   - Place it in the project root directory
+
+4. **Configure environment variables**
+   Create a `.env` file with:
+   ```env
+   TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+   GEMINI_API_KEY=your_gemini_api_key
+   OPENWEATHER_API_KEY=your_openweather_api_key
+   ```
+
+5. **Run the bot**
+   ```bash
+   python main.py
+   ```
+
+## 💬 Usage Examples
+
+### Casual Conversation
 ```
-User Message → Gemini AI (Intent) → Weather Check → Decision → Calendar/Response
+User: hello
+Bot: Hello! 👋 I'm your AI scheduling assistant. I can help you:
+     📅 Schedule activities - Just tell me what you want to do and when!
+     🌤️ Check weather - Ask about weather for any location
 ```
 
-### Built With
-- **LangGraph**: Workflow orchestration and decision routing
-- **Langchain**: AI framework and Gemini integration
-- **Gemini 2.0**: Natural language understanding
-- **OpenWeatherMap**: Weather data and forecasts
-- **Telegram Bot API**: User interface
-- **Python 3.11+**: Core runtime
-
-### 📚 **Learning Resources**
-- **[LangChain & LangGraph Guide](docs/LANGCHAIN_LANGGRAPH_GUIDE.md)** - Step-by-step explanation of the agentic workflow implementation
-- **[Project Summary](docs/PROJECT_SUMMARY.md)** - Technical overview and architecture details
-
-### Files Structure
+### Weather Queries
 ```
-langchain_project/
-├── main.py                        # Main application (745 lines)
-├── setup.py                      # Auto-installer
-├── requirements.txt               # Dependencies
-├── README.md                     # This file
-├── .env                          # Your API keys
-├── .gitignore                   # Git exclusions
-├── docs/                         # 📚 Documentation
-│   ├── LANGCHAIN_LANGGRAPH_GUIDE.md  # Beginner's guide to LangChain & LangGraph
-│   └── PROJECT_SUMMARY.md           # Technical overview and architecture
-└── test_scripts/                 # 🧪 Test files
-    ├── test_agent.py             # Full test suite
-    ├── test_gemini_simple.py     # Simple API test
-    ├── test_date_logic.py        # Date handling tests
-    ├── test_date_formatting.py   # Date formatting tests
-    └── test_weather_forecast.py  # Weather API tests
+User: What's the weather like tomorrow?
+Bot: 🌤️ Weather for Singapore
+     🌡️ Temperature: 29°C (feels like 33°C)
+     ☁️ Conditions: Overcast Clouds
+     💧 Humidity: 71%
 ```
+
+### Activity Scheduling
+```
+User: I want to go for a run tomorrow
+Bot: ⏰ I see you want to go for a run on 29 May 2025, but what time would you prefer?
+
+User: 6am
+Bot: ✅ Great! I've scheduled 'go for a run' for 29 May 2025, 6:00 AM. The weather looks good!
+```
+
+### Weather-Aware Scheduling
+```
+User: I want to have a picnic this Saturday at 2pm
+Bot: 🌧️ The weather forecast shows light rain for your planned picnic on 30 May 2025, 2:00 PM. 
+     Would you like to:
+     1. Proceed anyway
+     2. Reschedule to a different time
+     3. Cancel the activity
+```
+
+## 🏗️ Architecture
+
+### Core Components
+
+- **LangGraph Workflow**: State-based conversation flow management
+- **Google Gemini AI**: Advanced natural language understanding
+- **Google Calendar API**: Real calendar event creation and management
+- **OpenWeatherMap API**: Accurate weather forecasting
+- **Telegram Bot API**: User interface and messaging
+
+### Workflow States
+
+1. **Intent Extraction**: Analyze user message for scheduling intent
+2. **Weather Check**: Fetch weather conditions for planned activities
+3. **Calendar Creation**: Create Google Calendar events
+4. **Clarification Handling**: Manage multi-turn conversations for missing information
 
 ## 🧪 Testing
 
-### Run Tests
+The project includes comprehensive test scripts:
+
+- **`test_scripts/test_google_calendar_fixed.py`**: Tests Google Calendar API integration
+- **`test_scripts/test_main_calendar.py`**: Tests calendar functionality from main script
+
+Run tests:
 ```bash
-python test_scripts/test_agent.py           # Full test suite (5/5 should pass)
-python test_scripts/test_gemini_simple.py   # Quick Gemini test
-python test_scripts/test_date_logic.py      # Date handling test
+python test_scripts/test_google_calendar_fixed.py
+python test_scripts/test_main_calendar.py
 ```
 
-### Test Results
-- ✅ **Gemini AI**: 90-100% confidence for intent extraction
-- ✅ **Weather API**: Real-time Singapore weather data
-- ✅ **Telegram Bot**: Live message handling
-- ✅ **Multi-turn**: Context preservation working
-- ✅ **Date Logic**: Proper time clarification handling
+## 📁 Project Structure
 
-## 🐛 Troubleshooting
-
-### Bot Not Responding
-```bash
-# Stop any existing instances
-taskkill /f /im python.exe    # Windows
-# or Ctrl+C if running in terminal
-
-# Restart
-python main.py
+```
+langchain_project/
+├── main.py                           # Main bot application
+├── credentials.json                  # Google OAuth credentials (not in git)
+├── token.json                       # Saved authentication token (not in git)
+├── requirements.txt                 # Python dependencies
+├── .env                            # Environment variables (not in git)
+├── README.md                       # This file
+├── GOOGLE_CALENDAR_SETUP.md        # Google Calendar setup guide
+├── setup_fresh_oauth.md            # OAuth troubleshooting guide
+├── test_scripts/                   # Test utilities
+│   ├── test_google_calendar_fixed.py
+│   └── test_main_calendar.py
+└── docs/                          # Additional documentation
 ```
 
-### Common Issues
-1. **Missing dependencies**: Run `python setup.py` again
-2. **Wrong API keys**: Check your `.env` file
-3. **Bot token invalid**: Get new token from @BotFather
-4. **Weather API limit**: Free tier = 1000 calls/day
-5. **Test failures**: Run `python test_scripts/test_agent.py` to diagnose issues
+## 🔧 Configuration
 
-### Debug Mode
-```bash
-python main.py  # Watch the logs for detailed info
-```
+### Environment Variables
 
-## 🚧 Current Limitations & Future Plans
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | Yes |
+| `GEMINI_API_KEY` | Google Gemini AI API key | Yes |
+| `OPENWEATHER_API_KEY` | OpenWeatherMap API key | Yes |
 
-### ✅ **Working Now**
-- Activity scheduling with weather awareness
-- Weather-only queries with detailed info
-- Multi-turn conversations with context
-- Singapore default location
-- Smart time clarification
-- Rainy weather handling
+### Google Calendar Setup
 
-### 🔄 **Coming Soon**
-- Real Google Calendar integration (currently mocked)
-- Multiple calendar support
-- User preference memory
-- Voice message support
-- Analytics dashboard
+1. Create Google Cloud Project
+2. Enable Google Calendar API
+3. Create OAuth 2.0 credentials (Desktop application)
+4. Download credentials as `credentials.json`
+5. Run the bot - it will handle OAuth flow automatically
 
-### 🎯 **Known Issues**
-- Calendar events are mocked (not actually created)
-- Context expires after 10 minutes (by design)
-- Limited to text messages only
+Detailed setup instructions: `GOOGLE_CALENDAR_SETUP.md`
 
-## 📊 Performance
+## 🛡️ Security Features
 
-- **Response Time**: 2-5 seconds typical
-- **Accuracy**: 90-100% intent recognition
-- **Uptime**: Stable for continuous operation
-- **Memory**: Minimal state storage
-- **Rate Limits**: 1000 weather calls/day (free tier)
+- **Credential Protection**: All sensitive files in `.gitignore`
+- **OAuth 2.0**: Secure Google API authentication
+- **Token Management**: Automatic refresh and secure storage
+- **Input Validation**: Robust error handling and input sanitization
+
+## 🌍 Supported Features
+
+- **Global Weather**: Weather queries for any location worldwide
+- **Timezone Handling**: Proper timezone management (defaults to Asia/Singapore)
+- **Multi-language**: Supports various natural language expressions
+- **Error Recovery**: Graceful handling of API failures and network issues
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Make your changes
-3. Test with `python test_agent.py`
-4. Submit a pull request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - feel free to use and modify!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Setup Issues**: Check `GOOGLE_CALENDAR_SETUP.md`
+- **OAuth Problems**: See `setup_fresh_oauth.md`
+- **General Questions**: Open an issue on GitHub
+
+## 🎯 Recent Updates
+
+### v2.0.0 - Google Calendar Integration
+- ✅ **Full Google Calendar API integration**
+- ✅ **Improved intent classification** (handles greetings properly)
+- ✅ **Enhanced conversation flow** with casual conversation support
+- ✅ **Robust OAuth 2.0 authentication** with automatic token management
+- ✅ **Comprehensive testing suite** for calendar functionality
+- ✅ **Weather-aware scheduling** with intelligent recommendations
 
 ---
 
-## 🎉 **Status: PRODUCTION READY** ✅
-
-**This bot is fully functional and ready for daily use!**
-
-Start chatting with your AI scheduling assistant today! 🚀 
+**Built with ❤️ using LangChain, LangGraph, and Google AI** 
