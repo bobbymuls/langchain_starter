@@ -49,7 +49,7 @@ A sophisticated AI-powered Telegram bot that helps users schedule activities by 
    ```
 
 3. **Set up Google Calendar API**
-   - Follow the detailed guide in `GOOGLE_CALENDAR_SETUP.md`
+   - Follow the detailed guide in `docs/GOOGLE_CALENDAR_SETUP.md`
    - Download `credentials.json` from Google Cloud Console
    - Place it in the project root directory
 
@@ -144,12 +144,11 @@ langchain_project/
 ├── requirements.txt                 # Python dependencies
 ├── .env                            # Environment variables (not in git)
 ├── README.md                       # This file
-├── GOOGLE_CALENDAR_SETUP.md        # Google Calendar setup guide
-├── setup_fresh_oauth.md            # OAuth troubleshooting guide
 ├── test_scripts/                   # Test utilities
 │   ├── test_google_calendar_fixed.py
 │   └── test_main_calendar.py
-└── docs/                          # Additional documentation
+└── docs/                          # Documentation
+    └── GOOGLE_CALENDAR_SETUP.md    # Complete setup and troubleshooting guide
 ```
 
 ## 🔧 Configuration
@@ -170,7 +169,7 @@ langchain_project/
 4. Download credentials as `credentials.json`
 5. Run the bot - it will handle OAuth flow automatically
 
-Detailed setup instructions: `GOOGLE_CALENDAR_SETUP.md`
+Detailed setup instructions: `docs/GOOGLE_CALENDAR_SETUP.md`
 
 ## 🛡️ Security Features
 
@@ -200,8 +199,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Setup Issues**: Check `GOOGLE_CALENDAR_SETUP.md`
-- **OAuth Problems**: See `setup_fresh_oauth.md`
+- **Setup Issues**: Check `docs/GOOGLE_CALENDAR_SETUP.md`
 - **General Questions**: Open an issue on GitHub
 
 ## 🎯 Recent Updates
